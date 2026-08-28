@@ -8,7 +8,6 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleGoogleClick = () => {
-    // Attempt real Google OAuth initiation
     loginWithGoogle();
   };
 
@@ -16,7 +15,6 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Authenticate with user's inputted email ID
       const res = await fetch('http://localhost:5000/api/auth/dev-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

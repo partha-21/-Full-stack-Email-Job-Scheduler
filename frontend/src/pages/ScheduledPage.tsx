@@ -29,12 +29,10 @@ export const ScheduledPage: React.FC = () => {
 
   useEffect(() => {
     fetchEmails();
-    // Poll every 5 seconds for live status updates
     const interval = setInterval(fetchEmails, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Elasticsearch live search execution
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -43,7 +41,6 @@ export const ScheduledPage: React.FC = () => {
       setIsSearching(true);
       try {
         const searchData = await emailService.searchEmails(query);
-        // Filter search results to scheduled statuses
         const filtered = (searchData.results || []).filter((item: EmailItem) =>
           ['QUEUED', 'RESCHEDULED', 'PROCESSING'].includes(item.status)
         );

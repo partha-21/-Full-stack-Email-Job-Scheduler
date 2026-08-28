@@ -14,7 +14,6 @@ export const SendLaterModal: React.FC<SendLaterModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Default to tomorrow 9 AM
   const defaultDate = new Date();
   defaultDate.setDate(defaultDate.getDate() + 1);
   defaultDate.setHours(9, 0, 0, 0);

@@ -24,7 +24,6 @@ export async function getEtherealTransporter(): Promise<Transporter> {
     etherealAccount = { user: envUser, pass: envPass };
     console.log(`✅ Using configured Ethereal SMTP account: ${envUser}`);
   } else {
-    // Generate test SMTP service account on Ethereal automatically
     const testAccount = await nodemailer.createTestAccount();
     etherealAccount = {
       user: testAccount.user,

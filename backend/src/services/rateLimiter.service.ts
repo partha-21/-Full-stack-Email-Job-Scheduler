@@ -9,9 +9,6 @@ export interface RateLimitCheckResult {
 }
 
 export class SenderRateLimiter {
-  /**
-   * Atomic sliding window rate limiter for email senders using Redis Sorted Sets (ZSET).
-   */
   static async checkAndIncrement(
     senderEmail: string,
     hourlyLimit: number
@@ -22,13 +19,9 @@ export class SenderRateLimiter {
     const windowStart = now - windowMs;
 
     try {
-      // Use Redis MULTI pipeline for atomic execution
       const multi = redisConnection.multi();
-      // Remove timestamps older than 1 hour ago
       multi.zremrangebyscore(key, 0, windowStart);
-      // Count valid requests in current window
       multi.zcard(key);
-      // Get oldest entry score in current window
       multi.zrange(key, 0, 0, 'WITHSCORES');
 
       const results = await multi.exec();
@@ -56,7 +49,6 @@ export class SenderRateLimiter {
         };
       }
 
-      // Record this sending action
       const recordMulti = redisConnection.multi();
       recordMulti.zadd(key, now, `${now}:${Math.random().toString(36).substring(2, 7)}`);
       recordMulti.expire(key, 3600); // 1 hour TTL
@@ -70,7 +62,6 @@ export class SenderRateLimiter {
       };
     } catch (error: any) {
       console.error(`Rate limiter fallback error for ${senderEmail}:`, error.message);
-      // Fallback: allow sending if Redis is temporarily unavailable
       return {
         allowed: true,
         currentCount: 0,

@@ -55,11 +55,9 @@ async function runRateLimitTest() {
     const HOURLY_LIMIT = 3;
     const TOTAL_JOBS = 10;
     console.log(`📋 Configuration: Limit = ${HOURLY_LIMIT} emails/hr, Scheduling = ${TOTAL_JOBS} emails.`);
-    // 1. Reset Redis sliding window key for clean test state
     const testKey = `rate_limit:sender:${SENDER}`;
     const redis = (await Promise.resolve().then(() => __importStar(require('../src/config/redis')))).default;
     await redis.del(testKey);
-    // 2. Schedule campaign
     const recipients = Array.from({ length: TOTAL_JOBS }, (_, i) => `recipient_${i + 1}@example.com`);
     const campaignResult = await email_service_1.EmailService.scheduleEmailCampaign({
         userId: user.id,
@@ -73,9 +71,7 @@ async function runRateLimitTest() {
     });
     console.log(` queued ${campaignResult.scheduledCount} jobs for sender ${SENDER}`);
     console.log('⏳ Waiting for worker to process first batch...');
-    // Allow worker 5 seconds to process initial burst
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    // Inspect database status counts
     const sentCount = await database_1.default.email.count({
         where: { sender: SENDER, status: 'SENT' },
     });

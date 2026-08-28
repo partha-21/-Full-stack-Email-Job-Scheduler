@@ -32,7 +32,6 @@ export const ComposePage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Recipient input change & CSV auto parsing
   const handleToInputChange = async (value: string) => {
     setToInput(value);
     if (value.trim()) {
@@ -47,7 +46,6 @@ export const ComposePage: React.FC = () => {
     }
   };
 
-  // CSV File Upload handler
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -64,7 +62,6 @@ export const ComposePage: React.FC = () => {
     reader.readAsText(file);
   };
 
-  // Submit Handler
   const handleSubmit = async (overrideTime?: Date) => {
     setErrorMsg(null);
     if (detectedEmails.length === 0) {

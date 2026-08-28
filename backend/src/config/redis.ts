@@ -17,7 +17,6 @@ try {
   });
 
   client.on('error', () => {
-    // Suppress unhandled connection error noise when local Redis daemon is offline
   });
 
   redisInstance = client;
@@ -25,7 +24,6 @@ try {
   redisInstance = new RedisMock();
 }
 
-// Fallback provider helper
 export function getRedisClient(): any {
   if (!redisInstance || redisInstance.status === 'end') {
     redisInstance = new RedisMock();

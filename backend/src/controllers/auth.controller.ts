@@ -12,7 +12,6 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || 'your-google-clie
 const googleCallbackUrl =
   process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback';
 
-// Initialize Passport Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -75,11 +74,6 @@ export class AuthController {
     );
   }
 
-  /**
-   * Initiate Google OAuth authorization flow.
-   * ALWAYS redirects browser directly to Google's official OAuth authorization endpoint
-   * with prompt: 'select_account' so Google displays its official "Choose an Account" screen.
-   */
   static initiateGoogleAuth(req: Request, res: Response, next: NextFunction) {
     return passport.authenticate('google', {
       scope: ['openid', 'email', 'profile'],
@@ -87,9 +81,6 @@ export class AuthController {
     })(req, res, next);
   }
 
-  /**
-   * Form Email ID Login Handler (when user fills in Email ID + Password and clicks green Login button)
-   */
   static async devLogin(req: Request, res: Response) {
     try {
       const { email = 'nithishkumar6442@gmail.com', name } = req.body;
@@ -127,9 +118,6 @@ export class AuthController {
     }
   }
 
-  /**
-   * Handle Google OAuth callback exchange & user session issuance
-   */
   static googleCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('google', { session: false }, (err: any, user: any) => {
       if (err || !user) {

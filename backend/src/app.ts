@@ -18,7 +18,6 @@ import { setupElasticsearchIndex } from './config/elasticsearch';
 const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-// 1. Core Security & Middleware
 app.use(
   helmet({
     contentSecurityPolicy: false, // Allow BullBoard UI script inline loading
@@ -52,7 +51,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 2. BullMQ Live Dashboard setup
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/admin/queues');
 
@@ -63,7 +61,6 @@ createBullBoard({
 
 app.use('/admin/queues', serverAdapter.getRouter());
 
-// Root Landing Route
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -103,7 +100,6 @@ app.get('/', (req, res) => {
   `);
 });
 
-// 3. API Routes
 app.get('/health', (req, res) => {
   res.json({
     status: 'UP',
@@ -116,10 +112,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/emails', emailRoutes);
 app.use('/api/slack', slackRoutes);
 
-// 4. Central Error Handler
 app.use(errorHandler);
 
-// Initialize DB / Search indexes asynchronously
 setupElasticsearchIndex().catch(() => {});
 
 export default app;

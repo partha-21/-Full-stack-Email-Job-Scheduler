@@ -27,7 +27,6 @@ export const emailWorker = new Worker<EmailJobData>(
     const { emailId, userId, sender, recipient, subject, body, hourlyLimit, idempotencyKey } = job.data;
     console.log(`⚙️ Worker processing job ${job.id} for email ${emailId} -> ${recipient}`);
 
-    // 1. Fetch current email DB record
     const emailRecord = await prisma.email.findUnique({
       where: { id: emailId },
     });
@@ -37,20 +36,17 @@ export const emailWorker = new Worker<EmailJobData>(
       return { status: 'SKIPPED', reason: 'NOT_FOUND' };
     }
 
-    // 2. IDEMPOTENCY CHECK: If already sent, DO NOT re-send!
     if (emailRecord.status === 'SENT') {
       console.log(`🛡️ Idempotency triggered: Email ${emailId} already SENT. Skipping duplicate execution.`);
       return { status: 'SKIPPED', reason: 'ALREADY_SENT' };
     }
 
-    // 3. HOURLY RATE LIMIT CHECK via Redis sliding window
     const rateCheck = await SenderRateLimiter.checkAndIncrement(sender, hourlyLimit);
 
     if (!rateCheck.allowed) {
       const nextTime = rateCheck.nextAvailableTime || new Date(Date.now() + rateCheck.resetInMs);
       console.warn(`⏳ Hourly rate limit (${hourlyLimit}/hr) reached for ${sender}. Rescheduling email ${emailId} to ${nextTime.toISOString()}`);
 
-      // Update DB record status to RESCHEDULED
       const updatedRecord = await prisma.email.update({
         where: { id: emailId },
         data: {
@@ -60,10 +56,8 @@ export const emailWorker = new Worker<EmailJobData>(
         },
       });
 
-      // Update Elasticsearch document
       ElasticsearchService.indexEmail(updatedRecord).catch(() => {});
 
-      // Add delayed job for next available hourly window
       await emailQueue.add(
         'send-email',
         job.data,
@@ -74,7 +68,6 @@ export const emailWorker = new Worker<EmailJobData>(
         }
       );
 
-      // Trigger REAL Slack notification if user has connected Slack
       await SlackService.sendRateLimitNotification(userId, sender, hourlyLimit, nextTime);
 
       return {
@@ -84,7 +77,6 @@ export const emailWorker = new Worker<EmailJobData>(
       };
     }
 
-    // 4. Mark status as PROCESSING
     await prisma.email.update({
       where: { id: emailId },
       data: {
@@ -94,7 +86,6 @@ export const emailWorker = new Worker<EmailJobData>(
     });
 
     try {
-      // 5. Send Email via Ethereal SMTP
       const sendResult = await sendEmailViaEthereal({
         from: sender,
         to: recipient,
@@ -104,7 +95,6 @@ export const emailWorker = new Worker<EmailJobData>(
 
       const sentAt = new Date();
 
-      // 6. Update DB status to SENT
       const sentRecord = await prisma.email.update({
         where: { id: emailId },
         data: {
@@ -114,10 +104,8 @@ export const emailWorker = new Worker<EmailJobData>(
         },
       });
 
-      // 7. Update Elasticsearch index
       await ElasticsearchService.indexEmail(sentRecord);
 
-      // Enforce minimum delay buffer if specified
       if (minDelayMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, minDelayMs));
       }

@@ -23,14 +23,12 @@ async function runRateLimitTest() {
 
   console.log(`📋 Configuration: Limit = ${HOURLY_LIMIT} emails/hr, Scheduling = ${TOTAL_JOBS} emails.`);
 
-  // 1. Reset Redis sliding window key for clean test state
   const testKey = `rate_limit:sender:${SENDER}`;
   const redis = (await import('../src/config/redis')).default;
   try {
     await redis.del(testKey);
   } catch (err) {}
 
-  // 2. Schedule campaign
   const recipients = Array.from({ length: TOTAL_JOBS }, (_, i) => `recipient_${i + 1}@example.com`);
 
   const campaignResult = await EmailService.scheduleEmailCampaign({
@@ -47,10 +45,8 @@ async function runRateLimitTest() {
   console.log(` queued ${campaignResult.emailCount} jobs for sender ${SENDER}`);
   console.log('⏳ Waiting for worker to process first batch...');
 
-  // Allow worker 5 seconds to process initial burst
   await new Promise((resolve) => setTimeout(resolve, 5000));
 
-  // Inspect database status counts
   const sentCount = await prisma.email.count({
     where: { sender: SENDER, status: 'SENT' },
   });

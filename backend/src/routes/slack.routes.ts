@@ -4,10 +4,8 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// OAuth callback is public so Slack can call back
 router.get('/callback', SlackController.slackCallback);
 
-// Protected routes requiring user session
 router.use(authMiddleware);
 
 router.get('/connect', SlackController.connectSlack);

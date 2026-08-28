@@ -2,9 +2,6 @@ import { WebClient } from '@slack/web-api';
 import prisma from '../config/database';
 
 export class SlackService {
-  /**
-   * Send rate limit alert notification to user's Slack workspace if connected.
-   */
   static async sendRateLimitNotification(
     userId: string,
     senderEmail: string,
@@ -70,7 +67,6 @@ export class SlackService {
         ],
       };
 
-      // Try sending to user or bot's default channel / DM
       try {
         await client.chat.postMessage({
           channel: connection.slackUserId || connection.botUserId || '#general',
@@ -79,7 +75,6 @@ export class SlackService {
         console.log(`✅ Sent Slack rate-limit alert to user ${userId}`);
         return true;
       } catch (postErr: any) {
-        // If channel lookup fails, attempt conversations.list or post to bot channel
         console.warn(`Slack channel post failed, attempting DM fallback: ${postErr.message}`);
         const userConversations = await client.conversations.list({ types: 'public_channel,private_channel,im' });
         const targetChannel = userConversations.channels?.[0]?.id;

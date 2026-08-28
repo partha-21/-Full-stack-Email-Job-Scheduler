@@ -19,7 +19,6 @@ export async function authMiddleware(
   try {
     let token: string | undefined;
 
-    // Check Authorization header
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7);
@@ -33,7 +32,6 @@ export async function authMiddleware(
 
     const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
 
-    // Verify user exists in database
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { id: true, email: true, name: true, avatar: true },

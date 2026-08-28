@@ -10,7 +10,6 @@ const email_queue_1 = require("../src/queues/email.queue");
 const email_service_1 = require("../src/services/email.service");
 async function runLoadTest() {
     console.log('🧪 Starting 1,000+ Email Load Test Simulation...');
-    // Create or find a test user
     let user = await database_1.default.user.findFirst();
     if (!user) {
         user = await database_1.default.user.create({
@@ -39,7 +38,6 @@ async function runLoadTest() {
         scheduledStartTime: startTime,
     });
     console.log(`✅ Successfully queued ${result.scheduledCount} jobs into BullMQ!`);
-    // Inspect BullMQ queue metrics
     const counts = await email_queue_1.emailQueue.getJobCounts('waiting', 'delayed', 'active', 'completed', 'failed');
     console.log('📊 BullMQ Queue Metrics Post-Enqueue:', counts);
     console.log('\n✅ Load test completed successfully. Check BullMQ Dashboard at http://localhost:5000/admin/queues');

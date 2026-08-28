@@ -15,9 +15,6 @@ export interface EmailDocument {
 }
 
 export class ElasticsearchService {
-  /**
-   * Index or update an email document in Elasticsearch.
-   */
   static async indexEmail(emailDoc: EmailDocument): Promise<void> {
     try {
       await esClient.index({
@@ -42,9 +39,6 @@ export class ElasticsearchService {
     }
   }
 
-  /**
-   * Search emails across recipient, sender, subject, and body fields using Elasticsearch.
-   */
   static async searchEmails(userId: string, query: string): Promise<any[]> {
     try {
       if (!query || query.trim() === '') {
@@ -74,7 +68,6 @@ export class ElasticsearchService {
     } catch (error: any) {
       console.warn(`⚠️ Elasticsearch search failed (${error.message}). Falling back to database query.`);
 
-      // Fallback search in database if ES cluster is unready or offline
       const dbResults = await prisma.email.findMany({
         where: {
           userId,

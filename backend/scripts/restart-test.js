@@ -18,7 +18,6 @@ async function runRestartTest() {
             },
         });
     }
-    // Schedule email for 120 seconds in the future
     const futureDate = new Date(Date.now() + 120000);
     console.log(`📅 Scheduling delayed email job target time: ${futureDate.toLocaleTimeString()} (+120s)`);
     const result = await email_service_1.EmailService.scheduleEmailCampaign({

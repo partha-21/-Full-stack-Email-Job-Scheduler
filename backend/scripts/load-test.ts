@@ -7,7 +7,6 @@ import { EmailService } from '../src/services/email.service';
 async function runLoadTest() {
   console.log('🧪 Starting 1,000+ Email Load Test Simulation...');
 
-  // Create or find a test user
   let user = await prisma.user.findFirst();
   if (!user) {
     user = await prisma.user.create({
