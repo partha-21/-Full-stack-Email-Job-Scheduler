@@ -3,9 +3,17 @@ import { useAuth } from '../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
   const { loginWithGoogle, setToken } = useAuth();
-  const [emailInput, setEmailInput] = useState<string>('nithishkumar6442@gmail.com');
-  const [passwordInput, setPasswordInput] = useState<string>('••••••••••••');
+  const [emailInput, setEmailInput] = useState<string>('');
+  const [passwordInput, setPasswordInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'auth_failed') {
+      setErrorMsg('Google OAuth failed. Please check redirect URI in Google Cloud Console or sign in using Email below.');
+    }
+  }, []);
 
   const handleGoogleClick = () => {
     loginWithGoogle();
@@ -14,21 +22,24 @@ export const LoginPage: React.FC = () => {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg(null);
     try {
       const res = await fetch('http://localhost:5000/api/auth/dev-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: emailInput.trim() || 'nithishkumar6442@gmail.com',
+          email: emailInput.trim(),
           name: emailInput.split('@')[0] || 'User',
         }),
       });
       const data = await res.json();
       if (data.token) {
         setToken(data.token);
+      } else {
+        setErrorMsg(data.error || 'Login failed');
       }
-    } catch (err) {
-      console.error('Login error:', err);
+    } catch (err: any) {
+      setErrorMsg('Server connection failed');
     } finally {
       setLoading(false);
     }
@@ -42,6 +53,12 @@ export const LoginPage: React.FC = () => {
         <h1 className="text-2xl font-semibold text-slate-800 text-center mb-6">
           Login
         </h1>
+
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-medium leading-relaxed">
+            {errorMsg}
+          </div>
+        )}
 
         {/* Login with Google Button */}
         <button

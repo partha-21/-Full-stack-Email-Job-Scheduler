@@ -1,9 +1,40 @@
 version: '3.8'
 
 services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Your_File
+    container_name: your_container_name
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=database_url
+      - REDIS_URL=redis_port
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - PORT=5000
+      - FRONTEND_URL=http://localhost:5173
+      - JWT_SECRET=JWT_SECRET
+      - SESSION_SECRET=your_session_secret
+    depends_on:
+      - redis
+      - elasticsearch
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Your_File
+    container_name: name_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
   postgres:
     image: postgres:15-alpine
-    container_name: reachinbox_postgres
+    container_name: Your_File
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -16,7 +47,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: reachinbox_redis
+    container_name: Your_File
     restart: always
     ports:
       - "6379:6379"
@@ -25,7 +56,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
-    container_name: reachinbox_elasticsearch
+    container_name: Your_File
     restart: always
     environment:
       - node.name=elasticsearch
